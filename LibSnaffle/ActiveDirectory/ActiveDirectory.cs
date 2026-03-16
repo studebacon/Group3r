@@ -381,43 +381,46 @@ namespace LibSnaffle.ActiveDirectory
                 gpo.Attributes.CreatedDate = DateTime.ParseExact(createdDate, "yyyyMMddHHmmss.0K", CultureInfo.InvariantCulture);
                 gpo.Attributes.ModifiedDate = DateTime.ParseExact(modifiedDate, "yyyyMMddHHmmss.0K", CultureInfo.InvariantCulture);
                 byte[] ntSecurityDescriptor = resEnt.GetPropertyAsBytes("ntsecuritydescriptor");
-                RawSecurityDescriptor rawSecurityDescriptor = new RawSecurityDescriptor(ntSecurityDescriptor, 0);
-
-                string ntSecurityDescriptorString = rawSecurityDescriptor.GetSddlForm(AccessControlSections.All);
-                gpo.Attributes.NtSecurityDescriptor = ntSecurityDescriptorString;
-
-                Sddl.Parser.Sddl parsedSddl = new Sddl.Parser.Sddl(ntSecurityDescriptorString, Sddl.Parser.SecurableObjectType.DirectoryServiceObject);
-                gpo.Attributes.NtSecurityDescriptorSddl = parsedSddl;
-
-                gpo.Attributes.Uid = resEnt.GetProperty("name");
-                gpo.Attributes.VersionNumber = resEnt.GetProperty("versionnumber");
-                //gpo.Attributes.Cn = resEnt.Properties["cn"][0].ToString();
-                gpo.Attributes.DistinguishedName = resEnt.GetProperty("distinguishedname");
-
-                string gpoFlags = resEnt.GetProperty("flags");
-                switch (gpoFlags)
+                if (ntSecurityDescriptor != null && ntsecuritydescriptor.Length > 0)
                 {
-                    case "0":
-                        gpo.Attributes.UserPolicyEnabled = true;
-                        gpo.Attributes.ComputerPolicyEnabled = true;
-                        break;
-                    case "1":
-                        gpo.Attributes.ComputerPolicyEnabled = true;
-                        gpo.Attributes.UserPolicyEnabled = false;
-                        break;
-                    case "2":
-                        gpo.Attributes.ComputerPolicyEnabled = false;
-                        gpo.Attributes.UserPolicyEnabled = true;
-                        break;
-                    case "3":
-                        gpo.Attributes.ComputerPolicyEnabled = false;
-                        gpo.Attributes.UserPolicyEnabled = false;
-                        break;
-                    default:
-                        Mq.Degub("Couldn't process GPO Enabled Status. Weird.");
-                        break;
+                    RawSecurityDescriptor rawSecurityDescriptor = new RawSecurityDescriptor(ntSecurityDescriptor, 0);
+
+                    string ntSecurityDescriptorString = rawSecurityDescriptor.GetSddlForm(AccessControlSections.All);
+                    gpo.Attributes.NtSecurityDescriptor = ntSecurityDescriptorString;
+
+                    Sddl.Parser.Sddl parsedSddl = new Sddl.Parser.Sddl(ntSecurityDescriptorString, Sddl.Parser.SecurableObjectType.DirectoryServiceObject);
+                    gpo.Attributes.NtSecurityDescriptorSddl = parsedSddl;
+
+                    gpo.Attributes.Uid = resEnt.GetProperty("name");
+                    gpo.Attributes.VersionNumber = resEnt.GetProperty("versionnumber");
+                    //gpo.Attributes.Cn = resEnt.Properties["cn"][0].ToString();
+                    gpo.Attributes.DistinguishedName = resEnt.GetProperty("distinguishedname");
+
+                    string gpoFlags = resEnt.GetProperty("flags");
+                    switch (gpoFlags)
+                    {
+                        case "0":
+                            gpo.Attributes.UserPolicyEnabled = true;
+                            gpo.Attributes.ComputerPolicyEnabled = true;
+                            break;
+                        case "1":
+                            gpo.Attributes.ComputerPolicyEnabled = true;
+                            gpo.Attributes.UserPolicyEnabled = false;
+                            break;
+                        case "2":
+                            gpo.Attributes.ComputerPolicyEnabled = false;
+                            gpo.Attributes.UserPolicyEnabled = true;
+                            break;
+                        case "3":
+                            gpo.Attributes.ComputerPolicyEnabled = false;
+                            gpo.Attributes.UserPolicyEnabled = false;
+                            break;
+                        default:
+                            Mq.Degub("Couldn't process GPO Enabled Status. Weird.");
+                            break;
+                    }
+                    domainGpos.Add(gpo);
                 }
-                domainGpos.Add(gpo);
             }
             Mq.Trace("Finished grabbing GPO attributes.");
             return domainGpos;
