@@ -381,7 +381,7 @@ namespace LibSnaffle.ActiveDirectory
                 gpo.Attributes.CreatedDate = DateTime.ParseExact(createdDate, "yyyyMMddHHmmss.0K", CultureInfo.InvariantCulture);
                 gpo.Attributes.ModifiedDate = DateTime.ParseExact(modifiedDate, "yyyyMMddHHmmss.0K", CultureInfo.InvariantCulture);
                 byte[] ntSecurityDescriptor = resEnt.GetPropertyAsBytes("ntsecuritydescriptor");
-                if (ntSecurityDescriptor != null && ntsecuritydescriptor.Length > 0)
+                if (ntSecurityDescriptor != null && ntSecurityDescriptor.Length > 0)
                 {
                     RawSecurityDescriptor rawSecurityDescriptor = new RawSecurityDescriptor(ntSecurityDescriptor, 0);
 
